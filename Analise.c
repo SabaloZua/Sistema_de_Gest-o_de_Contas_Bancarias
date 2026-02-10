@@ -19,16 +19,20 @@ MENU PRINCIPAL
 4 - SAIR
 3. MENU CLIENTE
 1 - NOVO CLIENTE
-2 - ELIMINAR CLIENTE
-3 - LISTAR CLIENTES
-4 - PESQUISAR CLIENTE
-5 - VOLTAR
+2 - EDITAR CLIENTE
+3 - ELIMINAR CLIENTE
+4 -  LISTAR CLIENTES
+5 - PESQUISAR CLIENTE
+6 - VOLTAR
+
 4. MENU CONTA
 1 - NOVA CONTA
-2 - ENCERRAR CONTA
-3 - LISTAR CONTAS
-4 - PESQUISAR CONTA
-5 - VOLTAR
+2 - EDITAR CONTA
+3 - ENCERRAR CONTA
+4 - LISTAR CONTA
+5 - PESQUISAR CONTA
+6 - VOLTA
+
 5. MENU MOVIMENTOS
 1 - NOVO DEPÓSITO
 2 - NOVO LEVANTAMENTO
@@ -38,18 +42,18 @@ MENU PRINCIPAL
 6. Entidades
 CLIENTE
 int id;
-char nome, bi,genero,  morada, telefone, email;
+char nome[50], bi[20] ,genero[14], morada[50], telefone[12], email[50];
 DATE dataNascimento;
 
 
 7. CONTA
-int id, idCliente,numeroConta,iban;
-char tipo; float saldo;
+int id, idCliente;
+char tipo[50],iban[26],numeroConta[17]; float saldo;
 DATE dataAbertura;
 
 8.MOVIMENTO
-int id, contaId ;
-char tipo;
+int id, numeroConta ;
+char tipo[50];
 float valor;
 DATE dataMovimento;
 
