@@ -19,19 +19,18 @@ MENU PRINCIPAL
 4 - SAIR
 3. MENU CLIENTE
 1 - NOVO CLIENTE
-2 - EDITAR CLIENTE
+2 - EDITAR CLIENTE (Submenu: 1-Morada, 2-Telefone, 3-Email)
 3 - ELIMINAR CLIENTE
-4 -  LISTAR CLIENTES
+4 - LISTAR CLIENTES
 5 - PESQUISAR CLIENTE
 6 - VOLTAR
 
 4. MENU CONTA
 1 - NOVA CONTA
-2 - EDITAR CONTA
-3 - ENCERRAR CONTA
-4 - LISTAR CONTA
-5 - PESQUISAR CONTA
-6 - VOLTA
+2 - ENCERRAR CONTA
+3 - LISTAR CONTA
+4 - PESQUISAR CONTA
+5 - VOLTAR
 
 5. MENU MOVIMENTOS
 1 - NOVO DEPÓSITO
@@ -42,13 +41,14 @@ MENU PRINCIPAL
 6. Entidades
 CLIENTE
 int id;
-char nome[50], bi[20] ,genero[14], morada[50], telefone[12], email[50];
+char nome[50], bi[20] ,genero[14], morada[50], telefone[12];
 DATE dataNascimento;
 
 
 7. CONTA
-int id, idCliente;
-char tipo[50],iban[26],numeroConta[17]; float saldo;
+int id, idCliente, numeroConta;
+char iban[26], tipo[50];
+float saldo;
 DATE dataAbertura;
 
 8.MOVIMENTO
@@ -64,4 +64,5 @@ MOVIMENTOS.DAT
 10. Implementação
 
 Linguagem C
+Editor de Código: Dev C++ 
 */

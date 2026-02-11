@@ -9,7 +9,7 @@ typedef struct data
 typedef struct cliente
 {
 	int id;                    // Identificador unico do cliente
-	char nome[50], bi[20] ,genero[14], morada[50], telefone[12], email[50];
+	char nome[50], bi[20] ,genero[14], morada[50], telefone[12];
 	DATE dataNascimento;       // Data de nascimento do cliente
 }CLIENTE;
 
@@ -17,7 +17,7 @@ typedef struct cliente
 typedef struct conta
 {
   	int id, idCliente;         // ID da conta e ID do cliente titular
-	char numeroConta[17];      // 16 digitos + '\0'
+	int numeroConta;           // Numero da conta
 	char iban[26];             // AO06 + 21 digitos + '\0'
 	char tipo[50];             // Tipo de conta (Poupanca/Corrente)
 	float saldo;               // Saldo actual da conta em Kz

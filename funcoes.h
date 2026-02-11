@@ -1,4 +1,4 @@
-#include "estruturas.h"
+#include "Estrutras.h"
 
 
 // ======================= FUNCOES ClIENTE =======================
@@ -28,8 +28,8 @@ void eliminarConta();                            // Elimina uma conta do ficheir
 
 // ======================= FUNCOES MOVIMENTOS =======================
 int getNextMovimentoAutoID();                     // Calcula o proximo ID automatico para movimentos
-int  pesquisarContaPorNumero(int numeroConta, CONTA *contaEncontrada); // Procura uma conta pelo ID no ficheiro
-int actualizarSaldoConta(int numeroConta, float novoSaldo);     // Actualiza o saldo de uma conta no ficheiro
+int buscarContaPorNumero(int numeroConta, CONTA *contaEncontrada); // Procura uma conta pelo numero no ficheiro
+int actualizarSaldoConta(int numeroConta, float novoSaldo);      // Actualiza o saldo de uma conta no ficheiro
 void salvarMovimento(MOVIMENTO mov);              // Grava um movimento no ficheiro MOVIMENTO.DAT
 void realizarLevantamento();                      // Executa um levantamento (retirada de dinheiro)
 void  mostrarDadosMovimento(MOVIMENTO movimento); // Exibe os dados de um movimento

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "Estrutras.h"
+#include "menu.h"
 
 /*
  * Solicita e preenche os dados de um cliente via teclado.
@@ -33,8 +34,6 @@ void ActualizarDadosCliente(CLIENTE *cliente, int oldId)
     printf("Telefone?\n");
     gets(cliente->telefone);
 
-    printf("email?\n");
-    gets(cliente->email);
 
     fflush(stdin);
 
@@ -46,13 +45,12 @@ void ActualizarDadosCliente(CLIENTE *cliente, int oldId)
 }
 
 
-void pedirDadosCliente(CLIENTE *cliente, int oldId){ 
+void pedirDadosCliente(CLIENTE *cliente){ 
 
     
-        printf("Id = %d\n", oldId);
-        cliente->id = oldId;
+        printf("Id = %d\n", getNextClienteAutoID());
+        cliente->id = getNextClienteAutoID();
         fflush(stdin);
-    
 
     printf("Nome?\n");
     gets(cliente->nome);
@@ -77,9 +75,7 @@ void pedirDadosCliente(CLIENTE *cliente, int oldId){
     printf("Telefone?\n");
     gets(cliente->telefone);
 
-    printf("email?\n");
-    gets(cliente->email);
-
+    
     fflush(stdin);
 
     printf("Data de Nascimento[DD-MM-AAAA]?\n");
@@ -116,7 +112,7 @@ void mostrarDadosCliente(CLIENTE cliente)
 
     printf("Telefone %s\n", cliente.telefone);
 
-    printf("email %s\n", cliente.email);
+  
 }
 
 /*
@@ -146,7 +142,18 @@ void salvarDadosCliente()
     fseek(fp, 0L, SEEK_END);
 
     // pedir dados ao utilizador
-    pedirDadosCliente(&cliente, 0);
+    pedirDadosCliente(&cliente);
+
+    // Verificar se o BI ja existe
+    if (verificarBiExistente(cliente.bi))
+    {
+        system("cls");
+        printf("Ja existe um cliente com o BI: %s\n", cliente.bi);
+        puts("Registo nao efectuado!");
+        fclose(fp);
+        system("pause");
+        return;
+    }
 
     if (!verificarMaiorIdade(cliente))
     {
@@ -287,7 +294,7 @@ int getNextClienteAutoID()
  * Permite alterar os dados de um cliente existente no ficheiro CLIENTE.DAT.
  * Solicita o ID do cliente, exibe os dados actuais e pede confirmacao antes de alterar.
  */
-void alterarDadosCliente()
+void alterarDadosCliente(int campo)
 {
     FILE *fp;
     CLIENTE cliente;
@@ -295,8 +302,8 @@ void alterarDadosCliente()
     int idProcurado, posicao = 0;
     char opcao;
 
-    // abrir ou criar o ficheiro
-    if ((fp = fopen("CLIENTE.DAT", "a+b")) == NULL)
+    // abrir o ficheiro para leitura e escrita
+    if ((fp = fopen("CLIENTE.DAT", "r+b")) == NULL)
     {
         puts("Erro ao tentar abrir o ficheiro!");
         return;
@@ -307,7 +314,6 @@ void alterarDadosCliente()
     puts("Digite o Id que deseja alterar");
     scanf("%d", &idProcurado);
 
-    // escrever os dados da estrutura para o ficheiro
     while (fread(&cliente, sizeof(CLIENTE), 1, fp) == 1)
     {
         posicao++;
@@ -321,32 +327,30 @@ void alterarDadosCliente()
 
             printf("\nTem certeza q deseja alterar este registo [S/N]?\n");
             scanf(" %c", &opcao);
+            fflush(stdin);
 
             system("cls");
 
             if (opcao == 'S' || opcao == 's')
             {
-                ActualizarDadosCliente(&cliente,cliente.id);
+                switch (campo)
+                {
+                    case 1:
+                        printf("Nova Morada?\n");
+                        gets(cliente.morada);
+                        break;
+                    case 2:
+                        printf("Novo Telefone?\n");
+                        gets(cliente.telefone);
+                        break;
+                
+                   
+                }
 
-                // rever apartir daqui
+                // posicionar o cursor no registo procurado
                 rewind(fp);
-
-                // colocar o curso no registo procurado
                 fseek(fp, (posicao - 1) * sizeof(CLIENTE), SEEK_SET);
 
-                if (!verificarMaiorIdade(cliente))
-                {
-                    system("cls");
-                    puts("Conta NAO criada! O cliente e menor de idade (menos de 18 anos).");
-                    printf("Cliente: %s | Data de Nascimento: %d-%d-%d\n",
-                           cliente.nome,
-                           cliente.dataNascimento.dia,
-                           cliente.dataNascimento.mes,
-                           cliente.dataNascimento.ano);
-                    fclose(fp);
-                    system("pause");
-                    return;
-                }
                 // escrever os dados da estrutura para o ficheiro
                 if (fwrite(&cliente, sizeof(CLIENTE), 1, fp) == 1)
                 {
@@ -422,12 +426,75 @@ int verificarMaiorIdade(CLIENTE cliente)
 }
 
 /*
+ * Verifica se ja existe um cliente com o mesmo numero de BI no ficheiro CLIENTE.DAT.
+ * @param bi - Numero do BI a verificar
+ * @return 1 se o BI ja existe, 0 caso contrario
+ */
+int verificarBiExistente(char *bi)
+{
+    FILE *fp;
+    CLIENTE cliente;
+
+    fp = fopen("CLIENTE.DAT", "rb");
+    if (fp == NULL)
+    {
+        return 0;
+    }
+
+    rewind(fp);
+
+    while (fread(&cliente, sizeof(CLIENTE), 1, fp) == 1)
+    {
+        if (strcmp(cliente.bi, bi) == 0)
+        {
+            fclose(fp);
+            return 1;
+        }
+    }
+
+    fclose(fp);
+    return 0;
+}
+
+/*
+ * Verifica se um cliente ja possui uma conta do mesmo tipo (Poupanca ou Corrente).
+ * @param idCliente - ID do cliente a verificar
+ * @param tipo      - Tipo de conta a verificar
+ * @return 1 se ja existe uma conta desse tipo para o cliente, 0 caso contrario
+ */
+int verificarTipoContaDuplicada(int idCliente, char *tipo)
+{
+    FILE *fp;
+    CONTA conta;
+
+    fp = fopen("CONTA.DAT", "rb");
+    if (fp == NULL)
+    {
+        return 0;
+    }
+
+    rewind(fp);
+
+    while (fread(&conta, sizeof(CONTA), 1, fp) == 1)
+    {
+        if (conta.idCliente == idCliente && strcmp(conta.tipo, tipo) == 0)
+        {
+            fclose(fp);
+            return 1;
+        }
+    }
+
+    fclose(fp);
+    return 0;
+}
+
+/*
  * Gera um numero de conta aleatorio de 16 digitos e o respectivo IBAN angolano.
  * O IBAN segue o formato: AO06 + codigo banco (0040) + balcao (0000) + 11 digitos da conta + 2 digitos controlo.
  * @param numeroConta - Buffer para armazenar o numero de conta gerado (minimo 17 caracteres)
  * @param iban        - Buffer para armazenar o IBAN gerado (minimo 26 caracteres)
  */
-void gerarContaEIban(char *numeroConta, char *iban)
+void gerarContaEIban(int *numeroConta, char *iban)
 {
     static int inicializado = 0;
     if (!inicializado)
@@ -438,23 +505,16 @@ void gerarContaEIban(char *numeroConta, char *iban)
         inicializado = 1;
     }
 
-    // Gerar 16 digitos para numero de conta
-    for (int i = 0; i < 16; i++)
-    {
-        // rand: gera um numero inteiro pseudo-aleatorio; % 10 limita o resultado entre 0 e 9
-        numeroConta[i] = '0' + (rand() % 10);
-    }
-    numeroConta[16] = '\0';
+    // Gerar numero de conta aleatorio (entre 100000 e 999999)
+    // rand: gera um numero inteiro pseudo-aleatorio
+    *numeroConta = 100000 + (rand() % 900000);
 
-    // IBAN: AO06 + 0040 (banco) + 0000 (balcao) + 11 primeiros digitos da conta + 2 digitos controlo
-    char digitosControlo[3];
-    digitosControlo[0] = '0' + (rand() % 10);
-    digitosControlo[1] = '0' + (rand() % 10);
-    digitosControlo[2] = '\0';
+    // IBAN: AO06 + 0040 (banco) + 0000 (balcao) + numero da conta + 2 digitos controlo
+    int digitosControlo = 10 + (rand() % 90);
 
     // sprintf: escreve uma string formatada num buffer (similar ao printf, mas guarda numa variavel)
     // Parametros: buffer destino, formato, valores a formatar
-    sprintf(iban, "AO0600400000%.11s%s", numeroConta, digitosControlo);
+    sprintf(iban, "AO0600400000%d%d", *numeroConta, digitosControlo);
 }
 
 /*
@@ -510,8 +570,8 @@ void pedirDadosConta(CONTA *conta, int alterar, int oldId)
     fflush(stdin);
 
     // Gerar numero de conta e IBAN automaticamente
-    gerarContaEIban(conta->numeroConta, conta->iban);
-    printf("Numero da Conta: %s\n", conta->numeroConta);
+    gerarContaEIban(&conta->numeroConta, conta->iban);
+    printf("Numero da Conta: %d\n", conta->numeroConta);
     printf("IBAN: %s\n", conta->iban);
 
     printf("Tipo de Conta (Poupanca/Corrente)?\n");
@@ -533,7 +593,7 @@ void mostrarDadosConta(CONTA conta)
     printf("\n ------------------------Dados da Conta----------------------------- \n");
     printf("Id: %d\n", conta.id);
     printf("Id Cliente: %d\n", conta.idCliente);
-    printf("Numero da Conta: %s\n", conta.numeroConta);
+    printf("Numero da Conta: %d\n", conta.numeroConta);
     printf("IBAN: %s\n", conta.iban);
     printf("Tipo: %s\n", conta.tipo);
     printf("Saldo: %.2f Kz\n", conta.saldo);
@@ -564,10 +624,21 @@ void salvarDadosConta()
 
     pedirDadosConta(&conta, 0, 0);
 
-    // Verificar se o cliente existe e se e maior de idade
+    // Verificar se o cliente existe
     if (!buscarClientePorId(conta.idCliente, &cliente))
     {
         printf("Cliente com Id %d nao encontrado!\n", conta.idCliente);
+        fclose(fp);
+        system("pause");
+        return;
+    }
+
+    // Verificar se o cliente ja tem uma conta do mesmo tipo
+    if (verificarTipoContaDuplicada(conta.idCliente, conta.tipo))
+    {
+        system("cls");
+        printf("O cliente %s ja possui uma conta do tipo %s!\n", cliente.nome, conta.tipo);
+        puts("Cada cliente so pode ter uma conta de cada tipo.");
         fclose(fp);
         system("pause");
         return;
@@ -624,7 +695,7 @@ void pesquisarContaPorNumero()
 {
     FILE *fp;
     CONTA conta;
-    char numeroProcurado[17];
+    int numeroProcurado;
 
     fp = fopen("CONTA.DAT", "rb");
     if (fp == NULL)
@@ -636,12 +707,12 @@ void pesquisarContaPorNumero()
 
     rewind(fp);
 
-    puts("Digite o Numero da Conta Procurada (16 digitos)");
-    scanf("%16s", numeroProcurado);
+    puts("Digite o Numero da Conta Procurada");
+    scanf("%d", &numeroProcurado);
 
     while (fread(&conta, sizeof(CONTA), 1, fp) == 1)
     {
-        if (strcmp(conta.numeroConta, numeroProcurado) == 0)
+        if (conta.numeroConta == numeroProcurado)
         {
             system("cls");
 
@@ -665,73 +736,6 @@ void pesquisarContaPorNumero()
     system("pause");
 }
 
-/*
- * Permite alterar os dados de uma conta existente no ficheiro CONTA.DAT.
- * Solicita o ID da conta, exibe os dados actuais e pede confirmacao antes de alterar.
- */
-void alterarDadosConta()
-{
-    FILE *fp;
-    CONTA conta;
-    memset(&conta, 0, sizeof(CONTA));
-    int idProcurado, posicao = 0;
-    char opcao;
-
-    if ((fp = fopen("CONTA.DAT", "a+b")) == NULL)
-    {
-        puts("Erro ao tentar abrir o ficheiro!");
-        return;
-    }
-
-    rewind(fp);
-
-    puts("Digite o Id da Conta que deseja alterar");
-    scanf("%d", &idProcurado);
-
-    while (fread(&conta, sizeof(CONTA), 1, fp) == 1)
-    {
-        posicao++;
-
-        if (conta.id == idProcurado)
-        {
-            system("cls");
-
-            puts("Conta Localizada");
-            mostrarDadosConta(conta);
-
-            printf("\nTem certeza que deseja alterar esta conta [S/N]?\n");
-            scanf(" %c", &opcao);
-
-            system("cls");
-
-            if (opcao == 'S' || opcao == 's')
-            {
-                pedirDadosConta(&conta, 1, conta.id);
-
-                rewind(fp);
-
-                fseek(fp, (posicao - 1) * sizeof(CONTA), SEEK_SET);
-
-                if (fwrite(&conta, sizeof(CONTA), 1, fp) == 1)
-                {
-                    system("cls");
-                    puts("Conta Alterada com sucesso no Ficheiro");
-                }
-                else
-                {
-                    system("cls");
-                    puts("Erro ao tentar alterar os dados do ficheiro");
-                }
-            }
-
-            fclose(fp);
-            return;
-        }
-    }
-
-    printf("Conta com Id %d nao Encontrada!...\n", idProcurado);
-    fclose(fp);
-}
 
 // ======================= FUNCOES MOVIMENTOS =======================
 
@@ -914,7 +918,7 @@ void realizarLevantamento()
         return;
     }
 
-    printf("\nConfirmar levantamento de %.2f Kz da conta %s? [S/N]\n", valor, conta.numeroConta);
+    printf("\nConfirmar levantamento de %.2f Kz da conta %d? [S/N]\n", valor, conta.numeroConta);
     scanf(" %c", &opcao);
 
     if (opcao == 'S' || opcao == 's')
@@ -983,7 +987,7 @@ void realizarDeposito()
     // Verificar se a conta existe
     if (!buscarContaPorNumero(numeroConta, &conta))
     {
-        printf("Conta com Id %d nao encontrada!\n", numeroConta);
+        printf("Conta com numero %d nao encontrada!\n", numeroConta);
         system("pause");
         system("cls");
         return;
@@ -1005,7 +1009,7 @@ void realizarDeposito()
         return;
     }
 
-    printf("\nConfirmar deposito de %.2f Kz na conta %s? [S/N]\n", valor, conta.numeroConta);
+    printf("\nConfirmar deposito de %.2f Kz na conta %d? [S/N]\n", valor, conta.numeroConta);
     scanf(" %c", &opcao);
 
     if (opcao == 'S' || opcao == 's')

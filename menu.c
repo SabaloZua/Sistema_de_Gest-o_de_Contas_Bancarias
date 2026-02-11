@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "menu.h"
+#include "funcoes.h"
 
 #define MENU_CLIENTE 1
 #define MENU_CONTAS 2
@@ -8,11 +9,10 @@
 #define SAIR_DA_APLICACAO 4
 
 #define NOVA_CONTA 1
-#define EDITAR_CONTA 2
-#define ENCERAR_CONTA 3
-#define LISTAR_CONTA 4
-#define PESQUISAR_CONTA 5
-#define VOLTAR_CONTA 6
+#define ENCERAR_CONTA 2
+#define LISTAR_CONTA 3
+#define PESQUISAR_CONTA 4
+#define VOLTAR_CONTA 5
 
 
 #define NOVO_CLIENTE 1
@@ -136,7 +136,7 @@ void menuCliente()
 			break;
 
 			case EDITAR_CLIENTE:
-				alterarDadosCliente();
+				menuAlterarCliente();
 
 				system("pause");
 			break;
@@ -182,11 +182,10 @@ void menuConta()
 
 		printf("***MENU CONTA***\n");
 		printf("***1 - NOVA CONTA***\n");
-		printf("***2 -EDITAR CONTA ***\n");
-		printf("***3 -ENCERRAR CONTA***\n");
-		printf("***4 - LISTAR CONTA***\n");
-		printf("***5 - PESQUISAR CONTA***\n");
-		printf("***6 - VOLTAR***\n");
+		printf("***2 - ENCERRAR CONTA***\n");
+		printf("***3 - LISTAR CONTA***\n");
+		printf("***4 - PESQUISAR CONTA***\n");
+		printf("***5 - VOLTAR***\n");
 		printf("Escolha uma opcao\n");
 		scanf("%d", &opcao);
 
@@ -194,12 +193,6 @@ void menuConta()
 		{
 			case NOVA_CONTA:
 				salvarDadosConta();
-
-				system("pause");
-			break;
-
-			case EDITAR_CONTA:
-				alterarDadosConta();
 
 				system("pause");
 			break;
@@ -281,6 +274,29 @@ void menuMovimento()
 	}while(opcao != VOLTAR_MOVIMENTO);
 }
 
+void menuAlterarCliente()
+{
+	system("cls");
 
+	int opcao;
 
+	printf("\nO que deseja alterar?\n");
+	printf("1 - Morada\n");
+	printf("2 - Telefone\n");
+	printf("3 - Email\n");
+	printf("Escolha uma opcao: ");
+	scanf("%d", &opcao);
+	fflush(stdin);
 
+	switch (opcao)
+	{
+		case 1:
+		case 2:
+		case 3:
+			alterarDadosCliente(opcao);
+		break;
+
+		default:
+			printf("Opcao invalida!\n");
+	}
+}
